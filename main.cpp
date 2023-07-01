@@ -2,10 +2,8 @@
 #include <cstdlib>
 #include <fstream>
 #include <vector>
-#include<unistd.h>
 
 using namespace std;
-//unsigned int microsecond = 1000000;
 fstream ofile("current.txt");
 string x;
 void disp_call(string now){
@@ -43,8 +41,6 @@ void call_menu(){
         case 1:
             getline(ofile, x);
             disp_call(x);
-            //cout << "haha new game" << endl;
-            //call_menu();
             return;
         case 2:
             cout << "continue game" << endl;
