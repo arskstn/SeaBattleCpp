@@ -7,8 +7,7 @@
 using namespace std;
 
 ifstream fdef("default.txt"); //Текст, с полями по умолчанию
-ofstream sboard("scoreboard.txt");//Текст, с таблицей рекордов
-ofstream sboard1("currtime.txt");
+ofstream scoreboard("scoreboard.txt", ios::app);
 fstream fnow("current.txt"); //Текст, в котором происходит ход игры.
 string x; //Здесь хранится поле внутри кода игры
 bool flag = false;
@@ -17,25 +16,18 @@ vector<vector<char> > pole2;
 string subs1;
 string subs2;
 
-void print_field(vector<vector<char> > ppole){
-    sboard << endl;
-    for(const auto& row: ppole) {
-        for(const auto& element: row) {
-            sboard << element << " ";
-        }
-        sboard << "\n";
-    }
-    sboard.close();
-}
-
 void fs_update(string now){
+    int s1 = 245;
+    int s2 = 285;
     for(int i = 0; i < 10; i++){
-        int s1 = 245;
-        int s2 = 285;
         subs1 = x.substr(s1,10);
         subs2 = x.substr(s2, 10);
-        sboard << subs1 << endl;
-        sboard1 << subs2 << endl;
+        for(int j = 0; j< subs1.size(); j++){
+            pole1[i][j] = subs1[j];
+        }
+        for(int j = 0; j< subs2.size(); j++){
+            pole2[i][j] = subs2[j];
+        }
         s1 += 60;
         s2 += 60;
     }
@@ -69,6 +61,34 @@ void disp_call(string now){
     }
 }
 
+string builder(int currmove, vector<vector<char> > field1, vector<vector<char> > field2){
+    string starting = "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttPLAYERttttttttttttttttt";
+    if(currmove == 0){
+        starting += "<<";
+    }
+    else{
+        starting += ">>";
+    }
+    starting += "tttttttttttttttttPCttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttABCDEFGJIKttttttttttttttttttttttttttttttABCDEFGJIKttttttttt";
+    for (int k = 0; k < 10; k++){
+        starting += to_string(k);
+        for(int i = 0; i < 10; i++){
+            starting += field1[k][i];
+        }
+        starting += to_string(k);
+        starting += "tttttttttttttttttttttttttttt";
+        starting += to_string(k);
+        for(int i = 0; i < 10; i++){
+            starting += field2[k][i];
+        }
+        starting += to_string(k);
+        starting += "tttttttt";
+    }
+    starting += "tABCDEFGJIKttttttttttttttttttttttttttttttABCDEFGJIKttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt";
+    string ah = to_string(starting.size());
+    return ah;
+}
+
 
 
 void call_menu(){
@@ -82,18 +102,15 @@ void call_menu(){
         case 1: {
             getline(fdef, x);
             disp_call(x);
-            //fs_update(x);
-            //print_field(pole1);
-
-
-
+            fs_update(x);
             while (flag == false) {
                 int currmove = 0; //0 - player 1 - PC
                 string currinput = "";
                 if (currmove == 0) {
-                    //стрелочка на игрока
+                    //disp_call(x);
                     cout << endl << "Ваш ход: ";
                     cin >> currinput;
+                    cout << builder(currmove, pole1, pole2);
                     exit(0);
 
                 }
@@ -113,7 +130,7 @@ void call_menu(){
             call_menu();
             return;
         case 4:
-            cout << "Данная игра выполняется в консоли. Разрешение окна игры 60*20 пикселей. Сохранение происходит каждые 20 секунд автоматически." << endl;
+            cout << "Данная игра выполняется в консоли. Разрешение окна игры 60*16 пикселей. Сохранение выполняется пользователем по команде 'save'." << endl;
             call_menu();
             return;
         case 5:
