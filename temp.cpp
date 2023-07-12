@@ -4,48 +4,51 @@
 
 using namespace std;
 
-vector<vector<char> > pole1 = {{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'}};
-vector<vector<char> > pole2 = {{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'}};
-string subs1;
-string subs2;
 
-void fs_update(string now){
-    int s1 = 245;
-    int s2 = 285;
-    for(int i = 0; i < 10; i++){
-        subs1 = now.substr(s1,10);
-        subs2 = now.substr(s2, 10);
-        for(int j = 0; j< 10; j++){
-            pole1[i][j] = subs1[j];
+void prmat(vector<vector<char> > matrix){
+    for(int i = 0; i < matrix.size(); i++){
+        for(int j = 0; j < matrix[0].size(); j++){
+            cout << matrix[i][j] << " ";
         }
-        for(int j = 0; j< 10; j++){
-            pole2[i][j] = subs2[j];
-        }
-        s1 += 60;
-        s2 += 60;
+        cout << endl;
     }
 }
 
-void printMatrix(vector<vector<char> > matrix) {
-    std::cout << "Матрица из векторов типа char:\n";
-    for(const auto& row: matrix) {
-        for(const auto& element: row) {
-            std::cout << element << " ";
+vector<vector<int>> find_ships(vector<vector<char>> pole) {
+    vector<vector<int>> ships;
+    for (int i = 0; i < pole.size(); i++) {
+        for (int j = 0; j < pole[0].size(); j++) {
+            if (pole[i][j] == 's') {
+                vector<int> ship = {i, j};
+                bool is_border_horizontal = true;
+                bool is_border_vertical = true;
+                for (int di = -1; di <= 1; di++) {
+                    if (0 <= i + di < pole.size() && pole[i + di][j] == 's') {
+                        is_border_horizontal = false;
+                    }
+                    if (0 <= j + di < pole[0].size() && pole[i][j + di] == 's') {
+                        is_border_vertical = false;
+                    }
+                }
+                if (is_border_horizontal || is_border_vertical) {
+                    ships.push_back(ship);
+                }
+            }
         }
-        std::cout << "\n";
     }
+    for (vector<int> ship : ships) {
+        for (int i : ship) {
+            cout << i << " ";
+        }
+        cout << endl;
+    }
+    return ships;
 }
 
-int letind(string temper){
-    string xo = temper.substr(1,2);
-    int baza = stoi(xo.substr(1));
-    return baza;
-}
 
 
 int main(){
-    string now;
-    cin >> now;
-    cout << letind(now);
-
+    prmat(pole);
+    vector<vector<int>> ships = find_ships(pole);
+    return 0;
 }

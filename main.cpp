@@ -3,64 +3,80 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <random>
+#include <ctime>
+#include <chrono>
+#include <thread>
+
+/*
+ * 1. FIX messages about PC hits and misses
+ * 2. Finish working on ship replacement function
+ */
 
 using namespace std;
 
-ifstream fdef("default.txt"); //Текст, с полями по умолчанию
+ifstream default_field("default.txt"); //Default field position
 ofstream scoreboard("scoreboard.txt", ios::app);
-string x; //Здесь хранится поле внутри кода игры
-bool flag = false;
+fstream current_field("current.txt"); //Save file for current game position
+string x; //In-game variable for field positions
+bool flag = false; //Is the game over yet
+bool toRepl = false; //Part of dead ship replacement function
 vector<vector<char> > pole1 = {{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'}};
 vector<vector<char> > pole2 = {{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'}};
 vector<vector<char> > pole2hidden = {{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'},{'e','e','e','e','e','e','e','e','e','e'}};
 string subs1;
 string subs2;
 const int SIZE = 10;
+string result = "";
+int hitsqsbplr = 0;
+int hitsqbpc = 0;
+int currmove = 0; //0 - player 1 - PC
+int w2s = 0;
+int p2s = 0;
+int toHit = 0;
+int hitOnes = 0;
+string currinput;
+vector<vector<pair<int, int>>> arrofplships;
+vector<vector<pair<int, int>>> arrofpcships;
+vector<pair<int, int>> currplship;
+vector<pair<int, int>> currpcship;
 
-void outputMatrixToFile(const std::vector<std::vector<char>>& matrix, const std::string& filename) {
-    std::ofstream file(filename);
-    if (file.is_open()) {
-        int rows = matrix.size();
-        int cols = matrix[0].size();
-
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                file << matrix[i][j] << " ";
-            }
-            file << std::endl;
+void pr_matrix(vector<vector<pair<int, int>>> z){
+    for (int i = 0; i < z.size(); i++){
+        for(int j = 0; j < z[i].size(); j++){
+            cout << z[i][j].first << " " << z[i][j].second << ";";
         }
-
-        file.close();
-    } else {
-        std::cout << "Невозможно открыть файл " << filename << " для записи." << std::endl;
+        cout << endl;
     }
 }
 
-void initializeField(std::vector<std::vector<char>>& field) {
+//Заполнение поля пустыми клетками
+void start_pole(vector<vector<char>>& field) {
     for (int i = 0; i < SIZE; ++i) {
-        std::vector<char> row(SIZE, 'e'); // заполняем каждую клетку пустым полем
+        vector<char> row(SIZE, 'e'); // заполняем каждую клетку пустым полем
         field.push_back(row);
     }
 }
 
-bool isValidPlacement(const std::vector<std::vector<char>>& field, int row, int col, int length, bool isVertical) {
+//Проверка на условие расстановки кораблей
+bool right_place(const vector<vector<char>>& field, int row, int column, int length, bool isVertical) {
     if (isVertical) {
         if (row + length >= SIZE) return false; // проверка, чтобы корабли не выходили за границы поля
 
         // проверка, чтобы не было пересечений с другими кораблями и корабли не соприкасались
         for (int i = row - 1; i <= row + length; ++i) {
-            for (int j = col - 1; j <= col + 1; ++j) {
+            for (int j = column - 1; j <= column + 1; ++j) {
                 if (i >= 0 && i < SIZE && j >= 0 && j < SIZE) {
                     if (field[i][j] == 's') return false;
                 }
             }
         }
     } else {
-        if (col + length >= SIZE) return false; // проверка, чтобы корабль не выходил за границы поля
+        if (column + length >= SIZE) return false; // проверка, чтобы корабль не выходил за границы поля
 
         // проверка, чтобы не было пересечений с другими кораблями и корабли не соприкасались
         for (int i = row - 1; i <= row + 1; ++i) {
-            for (int j = col - 1; j <= col + length; ++j) {
+            for (int j = column - 1; j <= column + length; ++j) {
                 if (i >= 0 && i < SIZE && j >= 0 && j < SIZE) {
                     if (field[i][j] == 's') return false;
                 }
@@ -71,44 +87,83 @@ bool isValidPlacement(const std::vector<std::vector<char>>& field, int row, int 
     return true;
 }
 
-void placeShip(std::vector<std::vector<char>>& field, int length) {
+//Алгоритм размещения кораблей
+void ship_place(vector<vector<char>>& field, int length) {
     bool isVertical = rand() % 2 == 0; // выбираем случайную ориентацию корабля
 
-    int row, col;
+    int row, column;
     do {
         row = rand() % SIZE;
-        col = rand() % SIZE;
-    } while (!isValidPlacement(field, row, col, length, isVertical)); // повторяем, пока не найдем подходящее место для корабля
+        column = rand() % SIZE;
+    } while (!right_place(field, row, column, length, isVertical)); // повторяем, пока не найдем подходящее место для корабля
 
     // расставляем корабль
     if (isVertical) {
-        for (int i = row; i < row + length; ++i) {
-            field[i][col] = 's';
+        if(currmove == 0){
+            currpcship.clear();
         }
-    } else {
-        for (int j = col; j < col + length; ++j) {
+        else if(currmove == 1){
+            currplship.clear();
+        }
+        for (int i = row; i < row + length; ++i) {
+            field[i][column] = 's';
+            if(currmove == 0){
+                currpcship.push_back(make_pair(i, column));
+            }
+            else if(currmove == 1){
+                currplship.push_back(make_pair(i, column));
+            }
+        }
+        if(currmove == 0){
+            arrofpcships.push_back(currpcship);
+        }
+        else if(currmove == 1){
+            arrofplships.push_back(currplship);
+        }
+    }
+    else {
+        if(currmove == 0){
+            currpcship.clear();
+        }
+        else if(currmove == 1){
+            currplship.clear();
+        }
+        for (int j = column; j < column + length; ++j) {
             field[row][j] = 's';
+            if(currmove == 0){
+                currpcship.push_back(make_pair(row, j));
+            }
+            else if(currmove == 1){
+                currplship.push_back(make_pair(row, j));
+            }
+        }
+        if(currmove == 0){
+            arrofpcships.push_back(currpcship);
+        }
+        else if(currmove == 1){
+            arrofplships.push_back(currplship);
         }
     }
 }
 
-void randomlyPlaceShips(std::vector<std::vector<char>>& field) {
-    std::srand(std::time(0)); // инициализируем генератор случайных чисел
-
+//Расстановка кораблей компьютером
+void randomlyPlaceShips(vector<vector<char>>& field) {
+    srand(time(0)); // инициализируем генератор случайных чисел
     // расставляем корабли по количеству
-    placeShip(field, 4); // 1 корабль из 4 клеток
-    placeShip(field, 3); // 2 корабля из 3 клеток
-    placeShip(field, 3);
-    placeShip(field, 2); // 3 корабля из 2 клеток
-    placeShip(field, 2);
-    placeShip(field, 2);
-    placeShip(field, 1); // 4 корабля из 1 клетки
-    placeShip(field, 1);
-    placeShip(field, 1);
-    placeShip(field, 1);
+    ship_place(field, 4); // 1 корабль из 4 клеток
+    ship_place(field, 3); // 2 корабля из 3 клеток
+    ship_place(field, 3);
+    ship_place(field, 2); // 3 корабля из 2 клеток
+    ship_place(field, 2);
+    ship_place(field, 2);
+    ship_place(field, 1); // 4 корабля из 1 клетки
+    ship_place(field, 1);
+    ship_place(field, 1);
+    ship_place(field, 1);
 }
 
-void fs_update(string now){
+//Вычленение из now положение на поле
+void get_pole(string now){
     int s1 = 245;
     int s2 = 285;
     for(int i = 0; i < 10; i++){
@@ -125,15 +180,7 @@ void fs_update(string now){
     }
 }
 
-void printMatrix(vector<vector<char> > matrix) {
-    for(const auto& row: matrix) {
-        for(const auto& element: row) {
-            cout << element << " ";
-        }
-        cout << "\n";
-    }
-}
-
+//Отрисовка дисплея
 void disp_call(string now){
     system("clear");
     int counter = 0;
@@ -165,13 +212,14 @@ void disp_call(string now){
     }
 }
 
+//Построение измененного поля
 string builder(int currmove, vector<vector<char> > field1, vector<vector<char> > field2){
     string starting = "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttPLAYERttttttttttttttttt";
     if(currmove == 0){
-        starting += "<<";
+        starting += ">>";
     }
     else{
-        starting += ">>";
+        starting += "<<";
     }
     starting += "tttttttttttttttttPCttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttABCDEFGHIJttttttttttttttttttttttttttttttABCDEFGHIJttttttttt";
     for (int k = 0; k < 10; k++){
@@ -192,7 +240,8 @@ string builder(int currmove, vector<vector<char> > field1, vector<vector<char> >
     return starting;
 }
 
-int letind(string xo){
+//Получение индекса из букв
+int get_letter(string xo){
     char temper = toupper(xo[0]);
     if (temper == 'A'){
         return 0;
@@ -229,52 +278,116 @@ int letind(string xo){
     }
 }
 
-void pos_move(string moved){
-    int z = moved[1] - '0';
-    if (pole2hidden[z][letind(moved)] == 'e'){
-        pole2[z][letind(moved)] = 'm';
+void end_game(){
+    if (hitsqbpc == 20){
+        cout << "PC WON!";
     }
-    else if (pole2hidden[z][letind(moved)] == 's'){
-        pole2[z][letind(moved)] = 'z';
-        pole2hidden[z][letind(moved)] = 'z';
-    }
-    else{
-        cout << "wrong move";
+    else if (hitsqsbplr == 20){
+        cout << "PLAYER WON!";
     }
 }
 
-void replaceDestroyedShips(std::vector<std::vector<char>>& pole2) {
-    int rows = pole2.size();
-    int columns = pole2[0].size();
-
-    // Проверка горизонтальных последовательностей
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < columns - 4; j++) {
-            if (pole2[i][j] == 'e' && pole2[i][j+1] == 'z' && pole2[i][j+2] == 'z' && pole2[i][j+3] == 'z' && pole2[i][j+4] == 'e') {
-                for (int k = j; k <= j + 4; k++) {
-                    pole2[i][k] = 'u';
-                }
-                if (i > 0) pole2[i-1][j] = 'm'; // символ m сверху
-                if (i < rows - 1) pole2[i+1][j] = 'm'; // символ m снизу
-                if (j > 0 && pole2[i][j-1] != 'u') pole2[i][j-1] = 'm'; // символ m слева
-                if (j + 4 < columns - 1 && pole2[i][j+5] != 'u') pole2[i][j+5] = 'm'; // символ m справа
-            }
-        }
+//Проверка хода
+void pos_move(){
+    if(w2s == 0){
+        cout << "Your move: ";
+    }
+    else{
+        cout << endl << "Awesome hit! Your move: ";
     }
 
-    // Проверка вертикальных последовательностей
-    for (int i = 0; i < rows - 4; i++) {
-        for (int j = 0; j < columns; j++) {
-            if (pole2[i][j] == 'e' && pole2[i+1][j] == 'z' && pole2[i+2][j] == 'z' && pole2[i+3][j] == 'z' && pole2[i+4][j] == 'e') {
-                for (int k = i; k <= i + 4; k++) {
-                    pole2[k][j] = 'u';
+    string moved;
+    if(hitsqsbplr == 20 || hitsqbpc == 20){
+        flag = true;
+        end_game();
+    }
+    else{
+        cin >> moved;
+        int z = moved[1] - '0';
+        if(moved == "qq"){
+            //do something like menu or quit the game
+        }
+        else if (pole2hidden[z][get_letter(moved)] == 'e'){
+            pole2[z][get_letter(moved)] = 'm';
+            pole2hidden[z][get_letter(moved)] = 'm';
+            x = builder(currmove, pole1, pole2);
+            disp_call(x);
+            w2s = 0;
+            p2s = 0;
+            currmove = 1;
+        }
+        else if (pole2hidden[z][get_letter(moved)] == 's'){
+            pole2[z][get_letter(moved)] = 'z';
+            pole2hidden[z][get_letter(moved)] = 'z';
+            x = builder(currmove, pole1, pole2);
+            disp_call(x);
+            hitsqsbplr += 1;
+            w2s = 1;
+            pos_move();
+        }
+        else if (pole2hidden[z][get_letter(moved)] == 'm' || pole2hidden[z][get_letter(moved)] == 'z'){
+            cout << "Wrong move, try again!";
+            pos_move();
+        }
+    }
+}
+
+string pc_gen(){
+    string abc = "ABCDEFGHIJ";
+    string digits = "0123456789";
+    string newone;
+    random_device rand;
+    mt19937 gen(rand());
+    uniform_int_distribution<>dis(0, 9);
+    int random_number = dis(gen);
+    srand(time(0));
+    newone += abc[rand() % 10];
+    newone += digits[random_number];
+    return newone;
+}
+
+void pc_move(){
+    if(p2s == 0){
+        cout << "You've missed! PC is thinking" << endl;
+    }
+    else if(p2s == 1){
+        cout << "PC has hit! PC is thinking" << endl;
+    }
+    this_thread::sleep_for(chrono::milliseconds(2000));
+    string moved;
+    moved = pc_gen();
+    int z = moved[1] - '0';
+    if (pole1[z][get_letter(moved)] == 'e'){
+        pole1[z][get_letter(moved)] = 'm';
+        currmove = 0;
+        p2s = 0;
+    }
+    else if (pole1[z][get_letter(moved)] == 's'){
+        pole1[z][get_letter(moved)] = 'z';
+        pc_move();
+        p2s = 1;
+    }
+    else if(pole1[z][get_letter(moved)] == 'm' || pole1[z][get_letter(moved)] == 'z'){
+        pc_move();
+    }
+}
+
+void dead_ship_replace(vector<vector<char> > pole, vector<vector<pair<int, int>>> y){
+    for (int i = 0; i < y.size(); i++){
+        toRepl = false;
+        hitOnes = 0;
+        toHit = y[i].size();
+        for(int j = 0; j < y[i].size(); j++){
+            if(pole[y[i][j].first][y[i][j].second] == 'z'){
+                hitOnes += 1;
+            }
+            if(hitOnes == toHit){
+                for(int k = 0; k < hitOnes; k++){
+                    pole[y[i][k].first][y[i][k].second] = 'u';
                 }
-                if (j > 0) pole2[i][j-1] = 'm'; // символ m слева
-                if (j < columns - 1) pole2[i][j+1] = 'm'; // символ m справа
-                if (i > 0 && pole2[i-1][j] != 'u') pole2[i-1][j] = 'm'; // символ m сверху
-                if (i + 4 < rows - 1 && pole2[i+5][j] != 'u') pole2[i+5][j] = 'm'; // символ m снизу
             }
         }
+        cout << endl;
     }
 }
 
@@ -289,39 +402,41 @@ void call_menu(){
     cout << endl;
     switch(chosen){
         case 1: {
-            getline(fdef, x);
+            getline(default_field, x);
+            get_pole(x);
+            currmove = 1;
+            start_pole(pole2hidden);
+            randomlyPlaceShips(pole2hidden);
+            currmove = 0;
+            start_pole(pole1);
+            randomlyPlaceShips(pole1);
+            x = builder(0, pole1, pole2);
             disp_call(x);
-            fs_update(x);
-            initializeField(pole2hidden);
-            //randomlyPlaceShips(pole2hidden);
-            //TO BE FIXED
+            //pr_matrix(arrofpcships);
+            //pr_matrix(arrofplships);
             while (!flag) {
-                int currmove = 0; //0 - player 1 - PC
-                string currinput;
                 if (currmove == 0) {
-                    cout << endl << "Ваш ход: ";
-                    cin >> currinput;
-                    pos_move(currinput);
-                    if(true){
-                        replaceDestroyedShips(pole2);
-                        x = builder(currmove, pole1, pole2);
-                        outputMatrixToFile(pole2, "sss.txt");
-                        outputMatrixToFile(pole2hidden, "sss1.txt");
-                        disp_call(x);
-                    }
-                    else{
-                        replaceDestroyedShips(pole2);
-                        x = builder(currmove, pole1, pole2);
-                        disp_call(x);
-                        currmove = 1;
-                    }
+                    pos_move();
+                    dead_ship_replace(pole1, arrofpcships);
+                    dead_ship_replace(pole2, arrofplships);
+                    x = builder(currmove, pole1, pole2);
+                    disp_call(x);
                 }
                 else {
-                    //стрелочка на комп
+                    dead_ship_replace(pole1, arrofpcships);
+                    dead_ship_replace(pole2, arrofplships);
+                    x = builder(currmove, pole1, pole2);
+                    disp_call(x);
+                    pc_move();
+                    dead_ship_replace(pole1, arrofpcships);
+                    dead_ship_replace(pole2, arrofplships);
+                    x = builder(currmove, pole1, pole2);
+                    disp_call(x);
                 }
             }
             return;
         }
+
         case 2:
             cout << "continue game" << endl;
             call_menu();
