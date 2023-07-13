@@ -287,6 +287,138 @@ void end_game(){
     }
 }
 
+
+void dead_ship_replace(vector<vector<char> > &polenow, vector<vector<pair<int, int>>> arrofpole){
+    for (int i = 0; i < arrofpole.size(); i++){
+        int shipsegs = arrofpole[i].size();
+        int hitsegs = 0;
+        for(int j = 0; j < arrofpole[i].size(); j++){
+            int currx = arrofpole[i][j].first;
+            int curry = arrofpole[i][j].second;
+            if (polenow[currx][curry] == 'z'){
+                hitsegs += 1;
+            }
+        }
+        if(hitsegs == shipsegs){
+            for(int k = 0; k < arrofpole[i].size(); k++) {
+                int currx = arrofpole[i][k].first;
+                int curry = arrofpole[i][k].second;
+                polenow[currx][curry] = 'u';
+                try{
+                    if(polenow[currx-1][curry+1] == 'e'){
+                        polenow[currx-1][curry+1] = 'm';
+                    }
+                }
+                catch(...){
+                    continue;
+                }
+                try{
+                    if(polenow[currx][curry+1] == 'e'){
+                        polenow[currx][curry+1] = 'm';
+                    }
+                }
+                catch(...){
+                    continue;
+                }
+                try{
+                    if(polenow[currx+1][curry+1] == 'e'){
+                        polenow[currx+1][curry+1] = 'm';
+                    }
+                }
+                catch(...){
+                    continue;
+                }
+                try{
+                    if(polenow[currx+1][curry] == 'e'){
+                        polenow[currx+1][curry] = 'm';
+                    }
+                }
+                catch(...){
+                    continue;
+                }
+                try{
+                    if(polenow[currx+1][curry-1] == 'e'){
+                        polenow[currx+1][curry-1] = 'm';
+                    }
+                }
+                catch(...){
+                    continue;
+                }
+                try{
+                    if(polenow[currx][curry-1] == 'e'){
+                        polenow[currx][curry-1] = 'm';
+                    }
+                }
+                catch(...){
+                    continue;
+                }
+                try{
+                    if(polenow[currx-1][curry-1] == 'e'){
+                        polenow[currx-1][curry-1] = 'm';
+                    }
+                }
+                catch(...){
+                    continue;
+                }
+                try{
+                    if(polenow[currx-1][curry] == 'e'){
+                        polenow[currx-1][curry] = 'm';
+                    }
+                }
+                catch(...){
+                    continue;
+                }
+            }
+        }
+    }
+}
+
+/*
+void dead_ship_replace(vector<vector<char>>& polenow, vector<vector<pair<int, int>>> arrofpole) {
+    for (int i = 0; i < arrofpole.size(); i++) {
+        int shipsegs = arrofpole[i].size();
+        int hitsegs = 0;
+        for (int j = 0; j < arrofpole[i].size(); j++) {
+            int currx = arrofpole[i][j].first;
+            int curry = arrofpole[i][j].second;
+            if (polenow[currx][curry] == 'z') {
+                hitsegs += 1;
+            }
+        }
+        if (hitsegs == shipsegs) {
+            cout << "WOWZA!WOWZA!WOWZA!WOWZA!WOWZA!WOWZA!WOWZA!" << endl;
+            for (int k = 0; k < arrofpole[i].size(); k++) {
+                int currx = arrofpole[i][k].first;
+                int curry = arrofpole[i][k].second;
+                polenow[currx][curry] = 'u';
+
+                // Draw a one block border around the hit ship
+                if (k == 0) {
+                    polenow[currx][curry - 1] = 'm';
+                } else if (k == arrofpole[i].size() - 1) {
+                    polenow[currx][curry + 1] = 'm';
+                } else {
+                    polenow[currx][curry - 1] = 'm';
+                    polenow[currx][curry + 1] = 'm';
+                }
+
+                // Check if the ship is vertical
+                if (arrofpole[i][0].first == arrofpole[i][1].first) {
+                    // Draw a one block border below the ship
+                    for (int m = curry; m < curry + shipsegs; m++) {
+                        polenow[currx][m] = 'm';
+                    }
+                } else {
+                    // Draw a one block border to the right of the ship
+                    for (int m = currx; m < currx + shipsegs; m++) {
+                        polenow[m][curry] = 'm';
+                    }
+                }
+            }
+        }
+    }
+}
+*/
 //Проверка хода
 void pos_move(){
     if(w2s == 0){
@@ -319,6 +451,8 @@ void pos_move(){
         else if (pole2hidden[z][get_letter(moved)] == 's'){
             pole2[z][get_letter(moved)] = 'z';
             pole2hidden[z][get_letter(moved)] = 'z';
+            dead_ship_replace(pole1, arrofplships);
+            dead_ship_replace(pole2, arrofpcships);
             x = builder(currmove, pole1, pole2);
             disp_call(x);
             hitsqsbplr += 1;
@@ -326,7 +460,7 @@ void pos_move(){
             pos_move();
         }
         else if (pole2hidden[z][get_letter(moved)] == 'm' || pole2hidden[z][get_letter(moved)] == 'z'){
-            cout << "Wrong move, try again!";
+            cout << "Wrong move, try again!" << endl;
             pos_move();
         }
     }
@@ -353,6 +487,7 @@ void pc_move(){
     else if(p2s == 1){
         cout << "PC has hit! PC is thinking" << endl;
     }
+
     this_thread::sleep_for(chrono::milliseconds(2000));
     string moved;
     moved = pc_gen();
@@ -364,33 +499,40 @@ void pc_move(){
     }
     else if (pole1[z][get_letter(moved)] == 's'){
         pole1[z][get_letter(moved)] = 'z';
+        dead_ship_replace(pole1, arrofplships);
+        dead_ship_replace(pole2, arrofpcships);
         pc_move();
         p2s = 1;
     }
-    else if(pole1[z][get_letter(moved)] == 'm' || pole1[z][get_letter(moved)] == 'z'){
+    else if(pole1[z][get_letter(moved)] == 'm' || pole1[z][get_letter(moved)] == 'z' || pole1[z][get_letter(moved)] == 'u'){
         pc_move();
+        p2s = 3;
     }
 }
 
-void dead_ship_replace(vector<vector<char> > pole, vector<vector<pair<int, int>>> y){
-    for (int i = 0; i < y.size(); i++){
-        toRepl = false;
-        hitOnes = 0;
-        toHit = y[i].size();
-        for(int j = 0; j < y[i].size(); j++){
-            if(pole[y[i][j].first][y[i][j].second] == 'z'){
-                hitOnes += 1;
-            }
-            if(hitOnes == toHit){
-                for(int k = 0; k < hitOnes; k++){
-                    pole[y[i][k].first][y[i][k].second] = 'u';
-                }
-            }
+
+
+void output_matrix_to_file(vector<vector<char>> matrix, string filename) {
+    ofstream outfile(filename);
+    for (vector<char> row : matrix) {
+        for (char c : row) {
+            outfile << c;
         }
-        cout << endl;
+        outfile << endl;
     }
+    outfile.close();
 }
 
+void output_p_matrix_to_file(vector<vector<pair<int, int>>> matrix, string filename) {
+    ofstream outfile(filename);
+    for (vector<pair<int, int>> row : matrix) {
+        for (auto c : row) {
+            outfile << "(" << c.first << " " << c.second << ")" << " ";
+        }
+        outfile << endl;
+    }
+    outfile.close();
+}
 
 
 void call_menu(){
@@ -405,7 +547,7 @@ void call_menu(){
             getline(default_field, x);
             get_pole(x);
             currmove = 1;
-            start_pole(pole2hidden);
+            //start_pole(pole2hidden);
             randomlyPlaceShips(pole2hidden);
             currmove = 0;
             start_pole(pole1);
@@ -416,20 +558,24 @@ void call_menu(){
             //pr_matrix(arrofplships);
             while (!flag) {
                 if (currmove == 0) {
+                    output_matrix_to_file(pole1, "pole1.txt");
+                    output_matrix_to_file(pole2, "pole2.txt");
+                    output_matrix_to_file(pole2hidden, "pole3.txt");
+                    output_p_matrix_to_file(arrofplships, "plshippole.txt");
+                    output_p_matrix_to_file(arrofpcships, "pcshippole.txt");
                     pos_move();
-                    dead_ship_replace(pole1, arrofpcships);
-                    dead_ship_replace(pole2, arrofplships);
                     x = builder(currmove, pole1, pole2);
                     disp_call(x);
                 }
                 else {
-                    dead_ship_replace(pole1, arrofpcships);
-                    dead_ship_replace(pole2, arrofplships);
+                    output_matrix_to_file(pole1, "pole1.txt");
+                    output_matrix_to_file(pole2, "pole2.txt");
+                    output_matrix_to_file(pole2hidden, "pole3.txt");
+                    output_p_matrix_to_file(arrofplships, "plshippole.txt");
+                    output_p_matrix_to_file(arrofpcships, "pcshippole.txt");
                     x = builder(currmove, pole1, pole2);
                     disp_call(x);
                     pc_move();
-                    dead_ship_replace(pole1, arrofpcships);
-                    dead_ship_replace(pole2, arrofplships);
                     x = builder(currmove, pole1, pole2);
                     disp_call(x);
                 }
