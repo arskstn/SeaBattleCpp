@@ -192,16 +192,19 @@ void disp_call(string now){
                 cout << "-";
             }
             else if (nowx == 'e'){
-                cout << "·";
+                cout << "○";//■ ·
             }
             else if (nowx == 'z'){
-                cout<<"*";
+                cout<<"◎";
             }
             else if (nowx == 'u'){
-                cout<<"X";
+                cout<<"◉";
             }
             else if (nowx == 'm'){
-                cout << "о";
+                cout << "✗";
+            }
+            else if (nowx == 's'){
+                cout << "◉";
             }
             else{
                 cout << nowx;
@@ -280,10 +283,12 @@ int get_letter(string xo){
 
 void end_game(){
     if (hitsqbpc == 20){
-        cout << "PC WON!";
+        string x1 = "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrPC WON!rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr";
+        disp_call(x1);
     }
     else if (hitsqsbplr == 20){
-        cout << "PLAYER WON!";
+        string x2 = "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrPLAYER  WON!rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr";
+        disp_call(x2);
     }
 }
 
@@ -304,69 +309,143 @@ void dead_ship_replace(vector<vector<char> > &polenow, vector<vector<pair<int, i
                 int currx = arrofpole[i][k].first;
                 int curry = arrofpole[i][k].second;
                 polenow[currx][curry] = 'u';
-                try{
-                    if(polenow[currx-1][curry+1] == 'e'){
-                        polenow[currx-1][curry+1] = 'm';
+                if(currx == 0 && curry >= 1 && curry <= 8){
+                    if(polenow[currx][curry-1] == 'e'){
+                        polenow[currx][curry-1] = 'm';
                     }
-                }
-                catch(...){
-                    continue;
-                }
-                try{
+                    if(polenow[currx+1][curry-1] == 'e'){
+                        polenow[currx+1][curry-1] = 'm';
+                    }
+                    if(polenow[currx+1][curry] == 'e'){
+                        polenow[currx+1][curry] = 'm';
+                    }
+                    if(polenow[currx+1][curry+1] == 'e'){
+                        polenow[currx+1][curry+1] = 'm';
+                    }
                     if(polenow[currx][curry+1] == 'e'){
                         polenow[currx][curry+1] = 'm';
                     }
                 }
-                catch(...){
-                    continue;
-                }
-                try{
-                    if(polenow[currx+1][curry+1] == 'e'){
-                        polenow[currx+1][curry+1] = 'm';
-                    }
-                }
-                catch(...){
-                    continue;
-                }
-                try{
-                    if(polenow[currx+1][curry] == 'e'){
-                        polenow[currx+1][curry] = 'm';
-                    }
-                }
-                catch(...){
-                    continue;
-                }
-                try{
-                    if(polenow[currx+1][curry-1] == 'e'){
-                        polenow[currx+1][curry-1] = 'm';
-                    }
-                }
-                catch(...){
-                    continue;
-                }
-                try{
+                else if(currx == 9 && curry >= 1 && curry <= 8){
                     if(polenow[currx][curry-1] == 'e'){
                         polenow[currx][curry-1] = 'm';
                     }
-                }
-                catch(...){
-                    continue;
-                }
-                try{
                     if(polenow[currx-1][curry-1] == 'e'){
                         polenow[currx-1][curry-1] = 'm';
                     }
+                    if(polenow[currx-1][curry] == 'e'){
+                        polenow[currx-1][curry] = 'm';
+                    }
+                    if(polenow[currx-1][curry+1] == 'e'){
+                        polenow[currx-1][curry+1] = 'm';
+                    }
+                    if(polenow[currx][curry+1] == 'e'){
+                        polenow[currx][curry+1] = 'm';
+                    }
                 }
-                catch(...){
-                    continue;
-                }
-                try{
+                else if(curry == 0 && currx >= 1 && currx <= 8){
+                    if(polenow[currx+1][curry] == 'e'){
+                        polenow[currx+1][curry] = 'm';
+                    }
+                    if(polenow[currx+1][curry+1] == 'e'){
+                        polenow[currx+1][curry+1] = 'm';
+                    }
+                    if(polenow[currx][curry+1] == 'e'){
+                        polenow[currx][curry+1] = 'm';
+                    }
+                    if(polenow[currx-1][curry+1] == 'e'){
+                        polenow[currx-1][curry+1] = 'm';
+                    }
                     if(polenow[currx-1][curry] == 'e'){
                         polenow[currx-1][curry] = 'm';
                     }
                 }
-                catch(...){
-                    continue;
+                else if(curry == 9 && currx >= 1 && currx <= 8){
+                    if(polenow[currx+1][curry] == 'e'){
+                        polenow[currx+1][curry] = 'm';
+                    }
+                    if(polenow[currx+1][curry-1] == 'e'){
+                        polenow[currx+1][curry-1] = 'm';
+                    }
+                    if(polenow[currx][curry-1] == 'e'){
+                        polenow[currx][curry-1] = 'm';
+                    }
+                    if(polenow[currx-1][curry-1] == 'e'){
+                        polenow[currx-1][curry-1] = 'm';
+                    }
+                    if(polenow[currx-1][curry] == 'e'){
+                        polenow[currx-1][curry] = 'm';
+                    }
+                }
+                else if(currx == 0 && curry == 0){
+                    if(polenow[currx][curry+1] == 'e'){
+                        polenow[currx][curry+1] = 'm';
+                    }
+                    if(polenow[currx+1][curry+1] == 'e'){
+                        polenow[currx+1][curry+1] = 'm';
+                    }
+                    if(polenow[currx+1][curry] == 'e'){
+                        polenow[currx+1][curry] = 'm';
+                    }
+                }
+                else if(currx == 0 && curry == 9){
+                    if(polenow[currx][curry-1] == 'e'){
+                        polenow[currx][curry-1] = 'm';
+                    }
+                    if(polenow[currx+1][curry-1] == 'e'){
+                        polenow[currx+1][curry-1] = 'm';
+                    }
+                    if(polenow[currx+1][curry] == 'e'){
+                        polenow[currx+1][curry] = 'm';
+                    }
+                }
+                else if(currx == 9 && curry == 0){
+                    if(polenow[currx+1][curry] == 'e'){
+                        polenow[currx+1][curry] = 'm';
+                    }
+                    if(polenow[currx+1][curry+1] == 'e'){
+                        polenow[currx+1][curry+1] = 'm';
+                    }
+                    if(polenow[currx][curry+1] == 'e'){
+                        polenow[currx][curry+1] = 'm';
+                    }
+                }
+                else if(currx == 9 && curry == 9){
+                    if(polenow[currx][curry-1] == 'e'){
+                        polenow[currx][curry-1] = 'm';
+                    }
+                    if(polenow[currx-1][curry-1] == 'e'){
+                        polenow[currx-1][curry-1] = 'm';
+                    }
+                    if(polenow[currx-1][curry] == 'e'){
+                        polenow[currx-1][curry] = 'm';
+                    }
+                }
+                else if (currx >= 1 && currx <= 8 && curry >= 1 && curry <= 8){
+                    if(polenow[currx-1][curry+1] == 'e'){
+                        polenow[currx-1][curry+1] = 'm';
+                    }
+                    if(polenow[currx][curry+1] == 'e'){
+                        polenow[currx][curry+1] = 'm';
+                    }
+                    if(polenow[currx+1][curry+1] == 'e'){
+                        polenow[currx+1][curry+1] = 'm';
+                    }
+                    if(polenow[currx+1][curry] == 'e'){
+                        polenow[currx+1][curry] = 'm';
+                    }
+                    if(polenow[currx+1][curry-1] == 'e'){
+                        polenow[currx+1][curry-1] = 'm';
+                    }
+                    if(polenow[currx][curry-1] == 'e'){
+                        polenow[currx][curry-1] = 'm';
+                    }
+                    if(polenow[currx-1][curry-1] == 'e'){
+                        polenow[currx-1][curry-1] = 'm';
+                    }
+                    if(polenow[currx-1][curry] == 'e'){
+                        polenow[currx-1][curry] = 'm';
+                    }
                 }
             }
         }
@@ -421,6 +500,10 @@ void dead_ship_replace(vector<vector<char>>& polenow, vector<vector<pair<int, in
 */
 //Проверка хода
 void pos_move(){
+    if(hitsqsbplr == 20 || hitsqbpc == 20){
+        flag = true;
+        end_game();
+    }
     if(w2s == 0){
         cout << "Your move: ";
     }
@@ -429,40 +512,32 @@ void pos_move(){
     }
 
     string moved;
-    if(hitsqsbplr == 20 || hitsqbpc == 20){
-        flag = true;
-        end_game();
-    }
-    else{
-        cin >> moved;
-        int z = moved[1] - '0';
-        if(moved == "qq"){
-            //do something like menu or quit the game
-        }
-        else if (pole2hidden[z][get_letter(moved)] == 'e'){
-            pole2[z][get_letter(moved)] = 'm';
-            pole2hidden[z][get_letter(moved)] = 'm';
-            x = builder(currmove, pole1, pole2);
-            disp_call(x);
-            w2s = 0;
-            p2s = 0;
-            currmove = 1;
-        }
-        else if (pole2hidden[z][get_letter(moved)] == 's'){
-            pole2[z][get_letter(moved)] = 'z';
-            pole2hidden[z][get_letter(moved)] = 'z';
-            dead_ship_replace(pole1, arrofplships);
-            dead_ship_replace(pole2, arrofpcships);
-            x = builder(currmove, pole1, pole2);
-            disp_call(x);
-            hitsqsbplr += 1;
-            w2s = 1;
-            pos_move();
-        }
-        else if (pole2hidden[z][get_letter(moved)] == 'm' || pole2hidden[z][get_letter(moved)] == 'z'){
-            cout << "Wrong move, try again!" << endl;
-            pos_move();
-        }
+
+    cin >> moved;
+    int z = moved[1] - '0';
+    if (moved == "qq") {
+        //do something like menu or quit the game
+    } else if (pole2hidden[z][get_letter(moved)] == 'e') {
+        pole2[z][get_letter(moved)] = 'm';
+        pole2hidden[z][get_letter(moved)] = 'm';
+        x = builder(currmove, pole1, pole2);
+        disp_call(x);
+        w2s = 0;
+        p2s = 0;
+        currmove = 1;
+    } else if (pole2hidden[z][get_letter(moved)] == 's') {
+        pole2[z][get_letter(moved)] = 'z';
+        pole2hidden[z][get_letter(moved)] = 'z';
+        dead_ship_replace(pole1, arrofplships);
+        dead_ship_replace(pole2, arrofpcships);
+        x = builder(currmove, pole1, pole2);
+        disp_call(x);
+        hitsqsbplr += 1;
+        w2s = 1;
+        pos_move();
+    } else if (pole2hidden[z][get_letter(moved)] == 'm' || pole2hidden[z][get_letter(moved)] == 'z') {
+        cout << "Wrong move, try again!" << endl;
+        pos_move();
     }
 }
 
@@ -481,14 +556,18 @@ string pc_gen(){
 }
 
 void pc_move(){
+    if(hitsqsbplr == 20 || hitsqbpc == 20){
+        flag = true;
+        end_game();
+    }
+
     if(p2s == 0){
-        cout << "You've missed! PC is thinking" << endl;
+        cout << "PC is thinking" << endl;
     }
     else if(p2s == 1){
         cout << "PC has hit! PC is thinking" << endl;
     }
-
-    this_thread::sleep_for(chrono::milliseconds(2000));
+    this_thread::sleep_for(chrono::milliseconds(1500));
     string moved;
     moved = pc_gen();
     int z = moved[1] - '0';
